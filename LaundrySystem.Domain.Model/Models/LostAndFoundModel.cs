@@ -4,11 +4,8 @@
 
     public class LostAndFoundModel
     {
-        public int LostAndFoundId { get; set; }
-        public int HouseholdId { get; set; }
-        public byte[] Image { get; set; }
-        public string TextMessage { get; set; }
-        public DateTime RegistrationDate { get; set; }
-        public HouseholdModel Household { get; set; }
+        public Guid Id { get; set; }
+        public string PictureUrl { get; set; } // URL to the picture
+        public DateTime DateFound { get; set; }
     }
 }

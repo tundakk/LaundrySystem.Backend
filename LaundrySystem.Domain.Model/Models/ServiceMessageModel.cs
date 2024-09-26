@@ -4,9 +4,9 @@
 
     public class ServiceMessageModel
     {
-        public int ServiceMessageId { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string Message { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public bool IsRead { get; set; }
     }
 }

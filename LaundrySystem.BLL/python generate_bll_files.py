@@ -2,22 +2,23 @@ import os
 
 # Define the models you want to create interfaces and services for
 models = [
-    'Address',
-    'ChatMessage',
-    'Household',
-    'LaundryReservation',
-    'LostAndFound',
+    'AppUser',
+    'Booking',
+    'DesiredTimeslot',
+    'Room',
+    'Timeslot',
     'ServiceMessage',
-    'Slot'
+    'LostAndFound'
 ]
 
 # Directories to place the generated files
-interfaces_dir = './Interfaces'
-services_dir = './Services'
+base_dir = './Services'
+interfaces_dir = os.path.join(base_dir, 'Interfaces')
+implementations_dir = os.path.join(base_dir, 'Implementations')
 
 # Ensure directories exist
 os.makedirs(interfaces_dir, exist_ok=True)
-os.makedirs(services_dir, exist_ok=True)
+os.makedirs(implementations_dir, exist_ok=True)
 
 # Function to create interface content
 def create_interface_content(model):
@@ -34,9 +35,9 @@ def create_interface_content(model):
 }}
 """
 
-# Function to create service content
+# Function to create service content (implementations)
 def create_service_content(model):
-    return f"""namespace LaundrySystem.BLL.Infrastructure.Services
+    return f"""namespace LaundrySystem.BLL.Infrastructure.Services.Implementations
 {{
     using LaundrySystem.BLL.Infrastructure.Interfaces;
     using LaundrySystem.DAL.Entities;
@@ -49,8 +50,8 @@ def create_service_content(model):
 
     public class {model}Service : BaseService<{model}Model, {model}, I{model}Repo>, I{model}Service
     {{
-        public {model}Service(I{model}Repo {model.lower()}Repo, ILogger<{model}Service> logger)
-            : base({model.lower()}Repo, logger)
+        public {model}Service(I{model}Repo {model[0].lower() + model[1:]}Repo, ILogger<{model}Service> logger)
+            : base({model[0].lower() + model[1:]}, logger)
         {{
         }}
 
@@ -66,9 +67,9 @@ for model in models:
     with open(interface_file_path, 'w') as f:
         f.write(create_interface_content(model))
 
-    # Service file
-    service_file_path = os.path.join(services_dir, f'{model}Service.cs')
+    # Service implementation file
+    service_file_path = os.path.join(implementations_dir, f'{model}Service.cs')
     with open(service_file_path, 'w') as f:
         f.write(create_service_content(model))
 
-print("Interface and service files generated successfully.")
+print("Interface and implementation files generated successfully.")

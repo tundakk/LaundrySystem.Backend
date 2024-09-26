@@ -9,9 +9,10 @@ namespace LaundrySystem.DAL.DataModel
         public DataContext CreateDbContext(string[] args)
         {
             // Build the configuration
+            var basePath = Directory.GetCurrentDirectory();
             var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
+                .SetBasePath(basePath)
+                .AddJsonFile(Path.Combine(basePath, "..", "LaundrySystem.API", "appsettings.json"))
                 .Build();
 
             // Create the DbContextOptionsBuilder

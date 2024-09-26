@@ -1,8 +1,7 @@
-﻿namespace LaundrySystem.Api.Controllers.Base
-{
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Mvc;
 
+namespace LaundrySystem.Api.Controllers.Base
+{
     /// <summary>
     /// Base controller for API controllers.
     /// </summary>

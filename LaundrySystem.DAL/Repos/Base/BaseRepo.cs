@@ -1,12 +1,12 @@
-﻿namespace LaundrySystem.DAL.Repos.Base
-{
-    using LaundrySystem.DAL.DataModel;
-    using System.Linq;
+﻿using LaundrySystem.DAL.DataModel;
+using Microsoft.EntityFrameworkCore;
 
+namespace LaundrySystem.DAL.Repos.Base
+{
     public abstract class BaseRepo<T> : IBaseRepo<T> where T : class, new()
     {
         /// <summary>
-        /// Protected readonly property used as DI for classes. Doesnt feel right to have it public.
+        /// Protected readonly property used as DI for classes.
         /// </summary>
         protected readonly DataContext dataContext;
 
@@ -24,23 +24,25 @@
         /// </summary>
         /// <param name="id">The ID of the entity to retrieve.</param>
         /// <returns>Returns the entity that matches the ID.</returns>
-        public virtual T GetById(int id)
+        public virtual async Task<T> GetByIdAsync(Guid id)
         {
-            var entity = dataContext.Set<T>().Find(id);
+            // Use 'await' with the asynchronous method 'FindAsync'
+            var entity = await dataContext.Set<T>().FindAsync(id.ToString());
             if (entity == null)
             {
                 throw new ArgumentException($"Entity of type {typeof(T).Name} with ID {id} was not found.");
             }
-            return entity;
+            return entity; // Now, 'entity' is returned correctly in an async method
         }
 
         /// <summary>
         /// Gets all entities.
         /// </summary>
         /// <returns>Returns all instances of a given entity.</returns>
-        public virtual IQueryable<T> GetAll()
+        public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
-            return dataContext.Set<T>();
+            // Use 'await' with 'ToListAsync' to get the result asynchronously
+            return await dataContext.Set<T>().ToListAsync();
         }
 
         /// <summary>
@@ -48,10 +50,11 @@
         /// </summary>
         /// <param name="entity"></param>
         /// <returns>Returns the object that was created.</returns>
-        public virtual T Insert(T entity)
+        public virtual async Task<T> InsertAsync(T entity)
         {
-            var addedEntity = dataContext.Set<T>().Add(entity).Entity;
-            Save();
+            // Use 'await' with 'AddAsync'
+            var addedEntity = (await dataContext.Set<T>().AddAsync(entity)).Entity;
+            await SaveAsync(); // Call the asynchronous 'SaveAsync' method
             return addedEntity;
         }
 
@@ -60,15 +63,16 @@
         /// </summary>
         /// <param name="entity"></param>
         /// <returns>Returns the updated object of the entity.</returns>
-        public virtual T Update(T entity)
+        public virtual async Task<T> UpdateAsync(T entity)
         {
             if (entity == null)
             {
                 throw new ArgumentException("Update - Entity must not be null");
             }
 
-            dataContext.SetModified(entity);
-            Save();
+            // Use 'Update' (no async version available)
+            dataContext.Set<T>().Update(entity);
+            await SaveAsync();
             return entity;
         }
 
@@ -77,25 +81,25 @@
         /// </summary>
         /// <param name="entity"></param>
         /// <returns>Returns the object that was removed.</returns>
-        public virtual T Delete(T entity)
+        public virtual async Task<T> DeleteAsync(T entity)
         {
             var removedEntity = dataContext.Set<T>().Remove(entity).Entity;
-            Save();
+            await SaveAsync();
             return removedEntity;
         }
 
         /// <summary>
         /// Saves changes to the repository.
         /// </summary>
-        public void Save()
+        public async Task SaveAsync()
         {
             try
             {
-                this.dataContext.SaveChanges();
+                await dataContext.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                var newEx = new Exception($"DAL Save - Could not be completed: {ex.Message}.", ex);
+                var newEx = new Exception($"DAL SaveAsync - Could not be completed: {ex.Message}.", ex);
                 throw newEx;
             }
         }

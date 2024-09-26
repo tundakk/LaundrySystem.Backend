@@ -1,29 +1,38 @@
 ﻿namespace LaundrySystem.BLL.SMS
 {
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Options;
     using Twilio;
-    using Twilio.Rest.Api.V2010.Account; // is this the right using statement?
+    using Twilio.Rest.Api.V2010.Account;
 
+    /// <summary>
+    /// Service for sending SMS messages using Twilio.
+    /// </summary>
     public class SMSService : ISMSService
     {
-        private readonly string _accountSid;
-        private readonly string _authToken;
-        private readonly string _fromPhoneNumber;
+        private readonly TwilioSettings _settings;
 
-        public SMSService(string accountSid, string authToken, string fromPhoneNumber)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SMSService"/> class.
+        /// </summary>
+        /// <param name="settings">The Twilio settings.</param>
+        /// <param name="configuration">The configuration instance.</param>
+        public SMSService(IOptions<TwilioSettings> settings, IConfiguration configuration)
         {
-            _accountSid = accountSid;
-            _authToken = authToken;
-            _fromPhoneNumber = fromPhoneNumber;
+            _settings = settings.Value;
+            TwilioClient.Init(_settings.AccountSid, _settings.AuthToken);
         }
 
-        // https://console.twilio.com/
+        /// <summary>
+        /// Sends an SMS message to the specified phone number.
+        /// </summary>
+        /// <param name="to">The recipient's phone number.</param>
+        /// <param name="message">The message to send.</param>
         public void SendSMS(string to, string message)
         {
-            TwilioClient.Init(_accountSid, _authToken);
-
             MessageResource.Create(
                 body: message,
-                from: new Twilio.Types.PhoneNumber(_fromPhoneNumber),
+                from: new Twilio.Types.PhoneNumber(_settings.PhoneNumber),
                 to: new Twilio.Types.PhoneNumber(to)
             );
         }

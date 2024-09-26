@@ -2,17 +2,17 @@ import os
 
 # Define the models for which you want to create controllers
 models = [
-    'Address',
-    'ChatMessage',
-    'Household',
-    'LaundryReservation',
-    'LostAndFound',
+    'AppUser',
+    'Booking',
+    'DesiredTimeslot',
+    'Room',
+    'Timeslot',
     'ServiceMessage',
-    'Slot'
+    'LostAndFound'
 ]
 
-# Directory to place the generated controller files
-controllers_dir = './Controllers'
+# Directory to place the generated controller files (inside Implementations folder)
+controllers_dir = './Controllers/Implementations'
 
 # Ensure the directory exists
 os.makedirs(controllers_dir, exist_ok=True)
@@ -21,12 +21,12 @@ os.makedirs(controllers_dir, exist_ok=True)
 def create_controller_content(model):
     return f"""using LaundrySystem.Api.Controllers.Base;
 using LaundrySystem.BLL.Services.Interfaces;
+using LaundrySystem.BLL.Infrastructure.Interfaces;
 using LaundrySystem.Domain.Model.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-
-namespace LaundrySystem.API.Controllers
+namespace LaundrySystem.API.Controllers.Implementations
 {{
     /// <summary>
     /// {model}sController
@@ -35,17 +35,17 @@ namespace LaundrySystem.API.Controllers
     [Route("api/[controller]")]
     public class {model}sController : BaseController<{model}sController>
     {{
-        private readonly I{model}Service _{model.lower()}Service;
+        private readonly I{model}Service _{model[0].lower() + model[1:]}Service;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="{model}sController"/> class.
         /// </summary>
-        /// <param name="{model.lower()}Service">The {model} service.</param>
+        /// <param name="{model[0].lower() + model[1:]}Service">The {model} service.</param>
         /// <param name="logger">The logger.</param>
-        public {model}sController(I{model}Service {model.lower()}Service, ILogger<{model}sController> logger)
+        public {model}sController(I{model}Service {model[0].lower() + model[1:]}Service, ILogger<{model}sController> logger)
             : base(logger)
         {{
-            _{model.lower()}Service = {model.lower()}Service;
+            _{model[0].lower() + model[1:]}Service = {model[0].lower() + model[1:]}Service;
         }}
 
         ///<inheritdoc/>
@@ -54,7 +54,7 @@ namespace LaundrySystem.API.Controllers
         {{
             try
             {{
-                var response = _{model.lower()}Service.GetAll();
+                var response = _{model[0].lower() + model[1:]}Service.GetAll();
                 if (!response.Success)
                 {{
                     return BadRequest(response.Message);
@@ -69,11 +69,11 @@ namespace LaundrySystem.API.Controllers
         
         ///<inheritdoc/>
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public IActionResult GetById(Guid id)
         {{
             try
             {{
-                var response = _{model.lower()}Service.GetById(id);
+                var response = _{model[0].lower() + model[1:]}Service.GetById(id);
                 if (!response.Success)
                 {{
                     return BadRequest(response.Message);
@@ -88,14 +88,18 @@ namespace LaundrySystem.API.Controllers
 
         ///<inheritdoc/>
         [HttpPost]
-        public IActionResult Insert([FromBody] {model}Model {model.lower()}Model)
+        public IActionResult Insert([FromBody] {model}Model {model[0].lower() + model[1:]}Model)
         {{
             try
             {{
-                var response = _{model.lower()}Service.Insert({model.lower()}Model);
+                var response = _{model[0].lower() + model[1:]}Service.Insert({model[0].lower() + model[1:]}Model);
                 if (!response.Success)
                 {{
                     return BadRequest(response.Message);
+                }}
+                if (response.Data == null)
+                {{
+                    return BadRequest("Failed to create the {model}");
                 }}
                 return CreatedAtAction(nameof(GetById), new {{ id = response.Data.Id }}, response.Data);
             }}
@@ -107,12 +111,12 @@ namespace LaundrySystem.API.Controllers
         
         ///<inheritdoc/>
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] {model}Model {model.lower()}Model)
+        public IActionResult Update(Guid id, [FromBody] {model}Model {model[0].lower() + model[1:]}Model)
         {{
             try
             {{
-                {model.lower()}Model.Id = id;
-                var response = _{model.lower()}Service.Update({model.lower()}Model);
+                {model[0].lower() + model[1:]}Model.Id = id;
+                var response = _{model[0].lower() + model[1:]}Service.Update({model[0].lower() + model[1:]}Model);
                 if (!response.Success)
                 {{
                     return BadRequest(response.Message);
@@ -127,11 +131,11 @@ namespace LaundrySystem.API.Controllers
 
         ///<inheritdoc/>
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public IActionResult Delete(Guid id)
         {{
             try
             {{
-                var response = _{model.lower()}Service.Delete(id);
+                var response = _{model[0].lower() + model[1:]}Service.Delete(id);
                 if (!response.Success)
                 {{
                     return BadRequest(response.Message);

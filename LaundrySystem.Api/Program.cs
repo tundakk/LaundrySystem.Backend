@@ -1,64 +1,98 @@
-using LaundrySystem.BLL.Infrastructure.Services;
-using LaundrySystem.BLL.Services.Interfaces;
-using LaundrySystem.BLL.SMS;
-using LaundrySystem.DAL.DataModel;
-using LaundrySystem.DAL.Repos;
-using LaundrySystem.DAL.Repos.Interfaces;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using LaundrySystem.API;
+using LaundrySystem.BLL;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<DataContext>(options =>
-    options.UseSqlServer(connectionString));
-
-// Register repositories
-builder.Services.AddScoped<IAddressRepo, AddressRepo>();
-builder.Services.AddScoped<IChatMessageRepo, ChatMessageRepo>();
-builder.Services.AddScoped<IHouseholdRepo, HouseholdRepo>();
-builder.Services.AddScoped<ILaundryReservationRepo, LaundryReservationRepo>();
-builder.Services.AddScoped<ILostAndFoundRepo, LostAndFoundRepo>();
-builder.Services.AddScoped<IServiceMessageRepo, ServiceMessageRepo>();
-builder.Services.AddScoped<ISlotRepo, SlotRepo>();
-
-// Register services
-builder.Services.AddScoped<IAddressService, AddressService>();
-builder.Services.AddScoped<IChatMessageService, ChatMessageService>();
-builder.Services.AddScoped<IHouseholdService, HouseholdService>();
-builder.Services.AddScoped<ILaundryReservationService, LaundryReservationService>();
-builder.Services.AddScoped<ILostAndFoundService, LostAndFoundService>();
-builder.Services.AddScoped<IServiceMessageService, ServiceMessageService>();
-builder.Services.AddScoped<ISlotService, SlotService>();
-
-// Register Twilio SMS service
-builder.Services.AddSingleton<ISMSService>(new SMSService(
-    builder.Configuration["Twilio:AccountSid"],
-    builder.Configuration["Twilio:AuthToken"],
-    builder.Configuration["Twilio:FromPhoneNumber"]
-));
-
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<DataContext>();
-
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+// Add Business Logic Layer services, including DbContext, Identity, Repositories, and other services.
+builder.Services.AddBusinessLogicLayer(builder.Configuration);
 
 // Register Mapster mappings
 MappingConfig.RegisterMappings();
 
+////LOGGING
+//builder.Logging.ClearProviders();
+//builder.Logging.AddConsole();
+
+//builder.Logging.SetMinimumLevel(LogLevel.Error);
+//builder.WebHost.CaptureStartupErrors(true).UseSetting("detailedErrors", "true");
+// Configure Swagger
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "LaundrySystem API", Version = "v1" });
+
+    // Add JWT Authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = @"JWT Authorization header using the Bearer scheme.
+                      Enter 'Bearer' [space] and then your token in the text input below.
+                      Example: 'Bearer 12345abcdef'",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+              new OpenApiSecurityScheme
+              {
+                  Reference = new OpenApiReference
+                  {
+                      Type = ReferenceType.SecurityScheme,
+                      Id = "Bearer"
+                  },
+                  Scheme = "Bearer",
+                  Name = "Bearer",
+                  In = ParameterLocation.Header,
+              },
+              new List<string>()
+        }
+    });
+});
+
+// CORS configuration
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost",
+        policyBuilder =>
+        {
+            policyBuilder.WithOrigins("http://localhost:3000", "http://localhost:3001", "exp://192.168.153.179:8081")
+                         .AllowAnyHeader()
+                         .AllowAnyMethod()
+                         .AllowCredentials();
+        });
+});
+
 var app = builder.Build();
+
+// Seed data
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        await SeedData.InitializeAsync(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseMigrationsEndPoint();
+    // If you need MigrationsEndPoint, ensure you have added the necessary services
+    // app.UseMigrationsEndPoint();
 }
 else
 {
@@ -68,12 +102,17 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
+
+app.UseCors("AllowLocalhost");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapRazorPages();
+
+// If you have identity endpoints, make sure to map them
+app.MapIdentityApi<AppUser>();
 
 app.Run();

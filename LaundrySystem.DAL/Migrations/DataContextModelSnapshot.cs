@@ -17,379 +17,21 @@ namespace LaundrySystem.DAL.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.6")
+                .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.Address", b =>
+            modelBuilder.Entity("AppUser", b =>
                 {
-                    b.Property<int>("AddressId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AddressId"));
-
-                    b.Property<string>("EmailAddress")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("HomeAddress")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("HouseholdId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PhoneNumber1")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("PhoneNumber2")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.HasKey("AddressId");
-
-                    b.HasIndex("HouseholdId");
-
-                    b.ToTable("Addresses");
-
-                    b.HasData(
-                        new
-                        {
-                            AddressId = 1,
-                            EmailAddress = "smith@example.com",
-                            HomeAddress = "123 Main St.",
-                            HouseholdId = 1,
-                            PhoneNumber1 = "555-1234"
-                        },
-                        new
-                        {
-                            AddressId = 2,
-                            EmailAddress = "johnson@example.com",
-                            HomeAddress = "456 Elm St.",
-                            HouseholdId = 2,
-                            PhoneNumber1 = "555-5678",
-                            PhoneNumber2 = "555-9876"
-                        },
-                        new
-                        {
-                            AddressId = 3,
-                            EmailAddress = "williams@example.com",
-                            HomeAddress = "789 Oak St.",
-                            HouseholdId = 3,
-                            PhoneNumber1 = "555-4321"
-                        });
-                });
-
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.ChatMessage", b =>
-                {
-                    b.Property<int>("ChatMessageId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChatMessageId"));
-
-                    b.Property<int>("HouseholdId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MessageText")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SenderId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ChatMessageId");
-
-                    b.HasIndex("HouseholdId");
-
-                    b.HasIndex("SenderId");
-
-                    b.ToTable("ChatMessages");
-                });
-
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.Household", b =>
-                {
-                    b.Property<int>("HouseholdId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HouseholdId"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("HouseholdId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Households");
-
-                    b.HasData(
-                        new
-                        {
-                            HouseholdId = 1,
-                            Name = "Smith Household",
-                            UserId = "user1"
-                        },
-                        new
-                        {
-                            HouseholdId = 2,
-                            Name = "Johnson Household",
-                            UserId = "user2"
-                        },
-                        new
-                        {
-                            HouseholdId = 3,
-                            Name = "Williams Household",
-                            UserId = "user3"
-                        });
-                });
-
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.LaundryReservation", b =>
-                {
-                    b.Property<int>("ReservationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReservationId"));
-
-                    b.Property<TimeSpan>("ExpectedStart")
-                        .HasColumnType("time");
-
-                    b.Property<int>("HouseholdId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SlotId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ReservationId");
-
-                    b.HasIndex("HouseholdId");
-
-                    b.HasIndex("SlotId");
-
-                    b.ToTable("LaundryReservations");
-
-                    b.HasData(
-                        new
-                        {
-                            ReservationId = 1,
-                            ExpectedStart = new TimeSpan(0, 10, 0, 0, 0),
-                            HouseholdId = 1,
-                            SlotId = 1
-                        },
-                        new
-                        {
-                            ReservationId = 2,
-                            ExpectedStart = new TimeSpan(0, 12, 0, 0, 0),
-                            HouseholdId = 2,
-                            SlotId = 2
-                        },
-                        new
-                        {
-                            ReservationId = 3,
-                            ExpectedStart = new TimeSpan(0, 14, 0, 0, 0),
-                            HouseholdId = 3,
-                            SlotId = 3
-                        });
-                });
-
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.LostAndFound", b =>
-                {
-                    b.Property<int>("LostAndFoundId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LostAndFoundId"));
-
-                    b.Property<int>("HouseholdId")
-                        .HasColumnType("int");
-
-                    b.Property<byte[]>("Image")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<DateTime>("RegistrationDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("TextMessage")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("LostAndFoundId");
-
-                    b.HasIndex("HouseholdId");
-
-                    b.ToTable("LostAndFoundItems");
-                });
-
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.ServiceMessage", b =>
-                {
-                    b.Property<int>("ServiceMessageId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServiceMessageId"));
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ServiceMessageId");
-
-                    b.ToTable("ServiceMessages");
-
-                    b.HasData(
-                        new
-                        {
-                            ServiceMessageId = 1,
-                            EndDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Message = "Welcome to LaundrySystem!",
-                            StartDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        },
-                        new
-                        {
-                            ServiceMessageId = 2,
-                            EndDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Message = "Please adhere to the laundry schedule.",
-                            StartDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        },
-                        new
-                        {
-                            ServiceMessageId = 3,
-                            EndDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Message = "Thank you for using LaundrySystem.",
-                            StartDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        });
-                });
-
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.Slot", b =>
-                {
-                    b.Property<int>("SlotId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SlotId"));
-
-                    b.Property<DateTime>("AvailableDateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("NotifyHouseholdId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("Reserved")
-                        .HasColumnType("bit");
-
-                    b.HasKey("SlotId");
-
-                    b.HasIndex("NotifyHouseholdId");
-
-                    b.ToTable("Slots");
-
-                    b.HasData(
-                        new
-                        {
-                            SlotId = 1,
-                            AvailableDateTime = new DateTime(2024, 7, 1, 12, 46, 2, 969, DateTimeKind.Local).AddTicks(1761),
-                            NotifyHouseholdId = 1,
-                            Reserved = false
-                        },
-                        new
-                        {
-                            SlotId = 2,
-                            AvailableDateTime = new DateTime(2024, 7, 2, 12, 46, 2, 969, DateTimeKind.Local).AddTicks(1840),
-                            NotifyHouseholdId = 2,
-                            Reserved = false
-                        },
-                        new
-                        {
-                            SlotId = 3,
-                            AvailableDateTime = new DateTime(2024, 7, 3, 12, 46, 2, 969, DateTimeKind.Local).AddTicks(1843),
-                            NotifyHouseholdId = 3,
-                            Reserved = false
-                        });
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
-
-                    b.ToTable("AspNetRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetRoleClaims", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUser", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ApartmentNumber")
                         .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -401,6 +43,9 @@ namespace LaundrySystem.DAL.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EmailOptOut")
                         .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")
@@ -426,8 +71,17 @@ namespace LaundrySystem.DAL.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("PhoneNumberSecondary")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("PinCode")
+                        .HasColumnType("int");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("SmsOptOut")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
@@ -447,59 +101,183 @@ namespace LaundrySystem.DAL.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "user1",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "d7cd7857-17c0-4918-87f1-fdbe80bd608d",
-                            Email = "user1@example.com",
-                            EmailConfirmed = true,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "USER1@EXAMPLE.COM",
-                            NormalizedUserName = "USER1@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEDCjHfCzrq+6NEHukTNkIwLxxIxVNTod8k9jj8HYI8s+ePQ5GtguiiPuDyQg4Oawgw==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "33de70ed-cc18-4abb-a51b-b7280071925b",
-                            TwoFactorEnabled = false,
-                            UserName = "user1@example.com"
-                        },
-                        new
-                        {
-                            Id = "user2",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "5227fc37-73f6-4109-a25c-183b3e731f79",
-                            Email = "user2@example.com",
-                            EmailConfirmed = true,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "USER2@EXAMPLE.COM",
-                            NormalizedUserName = "USER2@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEFv4ZHQT0GA58ln+RmmsJo5S+U4YzWq7nH5I/3uLWQPyat6MAr0mpwMKT+uZ6ncHeQ==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "2995e94f-b47c-4c75-818c-afa435626e2b",
-                            TwoFactorEnabled = false,
-                            UserName = "user2@example.com"
-                        },
-                        new
-                        {
-                            Id = "user3",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "2981b895-50f8-4e84-96dd-2dc4ece39650",
-                            Email = "user3@example.com",
-                            EmailConfirmed = true,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "USER3@EXAMPLE.COM",
-                            NormalizedUserName = "USER3@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEAVAMfwyKAR7DVIfosj4A8gfm/WtPli/1X4hbgzEnxNwWyPLjxDTl9WT7Utz1P3Pjg==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "da80df82-547f-4110-86f3-b32f1c693b5e",
-                            TwoFactorEnabled = false,
-                            UserName = "user3@example.com"
-                        });
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("LaundrySystem.Domain.Model.Entities.Booking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TimeslotId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TimeslotId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("LaundrySystem.Domain.Model.Entities.DesiredTimeslot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("NotificationSent")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("TimeslotId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TimeslotId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("DesiredTimeslots");
+                });
+
+            modelBuilder.Entity("LaundrySystem.Domain.Model.Entities.LostAndFound", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("DateFound")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PictureUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LostAndFoundItems");
+                });
+
+            modelBuilder.Entity("LaundrySystem.Domain.Model.Entities.Room", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MaxCapacity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Rooms");
+                });
+
+            modelBuilder.Entity("LaundrySystem.Domain.Model.Entities.ServiceMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ServiceMessages");
+                });
+
+            modelBuilder.Entity("LaundrySystem.Domain.Model.Entities.Timeslot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomId");
+
+                    b.ToTable("Timeslots");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -513,9 +291,32 @@ namespace LaundrySystem.DAL.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -524,7 +325,7 @@ namespace LaundrySystem.DAL.Migrations
                     b.ToTable("AspNetUserClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
                     b.Property<string>("LoginProvider")
                         .HasColumnType("nvarchar(450)");
@@ -535,9 +336,8 @@ namespace LaundrySystem.DAL.Migrations
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -546,13 +346,13 @@ namespace LaundrySystem.DAL.Migrations
                     b.ToTable("AspNetUserLogins", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("RoleId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -561,10 +361,10 @@ namespace LaundrySystem.DAL.Migrations
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("LoginProvider")
                         .HasColumnType("nvarchar(450)");
@@ -580,150 +380,147 @@ namespace LaundrySystem.DAL.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.Address", b =>
+            modelBuilder.Entity("LaundrySystem.Domain.Model.Entities.Booking", b =>
                 {
-                    b.HasOne("LaundrySystem.DAL.Entities.Household", "Household")
-                        .WithMany("Addresses")
-                        .HasForeignKey("HouseholdId")
+                    b.HasOne("LaundrySystem.Domain.Model.Entities.Timeslot", "Timeslot")
+                        .WithMany("Bookings")
+                        .HasForeignKey("TimeslotId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Household");
-                });
-
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.ChatMessage", b =>
-                {
-                    b.HasOne("LaundrySystem.DAL.Entities.Household", "Household")
-                        .WithMany("ChatMessages")
-                        .HasForeignKey("HouseholdId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
-                        .WithMany()
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Household");
-                });
-
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.Household", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
-                        .WithMany()
+                    b.HasOne("AppUser", "User")
+                        .WithMany("Bookings")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Timeslot");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LaundrySystem.Domain.Model.Entities.DesiredTimeslot", b =>
+                {
+                    b.HasOne("LaundrySystem.Domain.Model.Entities.Timeslot", "Timeslot")
+                        .WithMany("DesiredTimeslots")
+                        .HasForeignKey("TimeslotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AppUser", "User")
+                        .WithMany("DesiredTimeslots")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Timeslot");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LaundrySystem.Domain.Model.Entities.Timeslot", b =>
+                {
+                    b.HasOne("LaundrySystem.Domain.Model.Entities.Room", "Room")
+                        .WithMany("Timeslots")
+                        .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
 
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.LaundryReservation", b =>
-                {
-                    b.HasOne("LaundrySystem.DAL.Entities.Household", "Household")
-                        .WithMany("LaundryReservations")
-                        .HasForeignKey("HouseholdId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.OwnsOne("LaundrySystem.Domain.Model.ValueObjects.TimeRange", "SlotTime", b1 =>
+                        {
+                            b1.Property<Guid>("TimeslotId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<DateTime>("End")
+                                .HasColumnType("datetime2")
+                                .HasColumnName("EndTime");
+
+                            b1.Property<DateTime>("Start")
+                                .HasColumnType("datetime2")
+                                .HasColumnName("StartTime");
+
+                            b1.HasKey("TimeslotId");
+
+                            b1.ToTable("Timeslots");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TimeslotId");
+                        });
+
+                    b.Navigation("Room");
+
+                    b.Navigation("SlotTime")
                         .IsRequired();
-
-                    b.HasOne("LaundrySystem.DAL.Entities.Slot", "Slot")
-                        .WithMany("LaundryReservations")
-                        .HasForeignKey("SlotId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Household");
-
-                    b.Navigation("Slot");
                 });
 
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.LostAndFound", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
-                    b.HasOne("LaundrySystem.DAL.Entities.Household", "Household")
-                        .WithMany("LostAndFoundItems")
-                        .HasForeignKey("HouseholdId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Household");
-                });
-
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.Slot", b =>
-                {
-                    b.HasOne("LaundrySystem.DAL.Entities.Household", "NotifyHousehold")
-                        .WithMany("Slots")
-                        .HasForeignKey("NotifyHouseholdId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("NotifyHousehold");
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.Household", b =>
+            modelBuilder.Entity("AppUser", b =>
                 {
-                    b.Navigation("Addresses");
+                    b.Navigation("Bookings");
 
-                    b.Navigation("ChatMessages");
-
-                    b.Navigation("LaundryReservations");
-
-                    b.Navigation("LostAndFoundItems");
-
-                    b.Navigation("Slots");
+                    b.Navigation("DesiredTimeslots");
                 });
 
-            modelBuilder.Entity("LaundrySystem.DAL.Entities.Slot", b =>
+            modelBuilder.Entity("LaundrySystem.Domain.Model.Entities.Room", b =>
                 {
-                    b.Navigation("LaundryReservations");
+                    b.Navigation("Timeslots");
+                });
+
+            modelBuilder.Entity("LaundrySystem.Domain.Model.Entities.Timeslot", b =>
+                {
+                    b.Navigation("Bookings");
+
+                    b.Navigation("DesiredTimeslots");
                 });
 #pragma warning restore 612, 618
         }

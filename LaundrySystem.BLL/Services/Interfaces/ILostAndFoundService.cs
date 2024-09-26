@@ -1,11 +1,10 @@
-using LaundrySystem.BLL.Infrastructure.Interfaces;
-
-namespace LaundrySystem.BLL.Services.Interfaces
+namespace LaundrySystem.BLL.Infrastructure.Interfaces
 {
     using LaundrySystem.Domain.Model.Models;
-    using LaundrySystem.Domain.Model.Responses;
-    using System.Collections.Generic;
 
+    /// <summary>
+    /// Service interface for handling lost and found operations.
+    /// </summary>
     public interface ILostAndFoundService : IBaseService<LostAndFoundModel>
     {
         // Add any additional methods specific to LostAndFound if needed

@@ -7,27 +7,46 @@
     using Microsoft.Extensions.Logging;
     using System;
     using System.Collections.Generic;
-    using System.Linq;
+    using System.Threading.Tasks;
 
+    /// <summary>
+    /// Base service class providing common CRUD operations.
+    /// </summary>
+    /// <typeparam name="TModel">The type of the model.</typeparam>
+    /// <typeparam name="TEntity">The type of the entity.</typeparam>
+    /// <typeparam name="TRepo">The type of the repository.</typeparam>
     public abstract class BaseService<TModel, TEntity, TRepo> : IBaseService<TModel>
         where TModel : class
         where TEntity : class
         where TRepo : IBaseRepo<TEntity>
     {
+        /// <summary>
+        /// The repository instance.
+        /// </summary>
         protected readonly TRepo Repository;
+
+        /// <summary>
+        /// The logger instance.
+        /// </summary>
         protected readonly ILogger<BaseService<TModel, TEntity, TRepo>> Logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseService{TModel, TEntity, TRepo}"/> class.
+        /// </summary>
+        /// <param name="repository">The repository instance.</param>
+        /// <param name="logger">The logger instance.</param>
         protected BaseService(TRepo repository, ILogger<BaseService<TModel, TEntity, TRepo>> logger)
         {
             Repository = repository;
             Logger = logger;
         }
 
-        public virtual ServiceResponse<IEnumerable<TModel>> GetAll()
+        /// <inheritdoc />
+        public virtual async Task<ServiceResponse<IEnumerable<TModel>>> GetAllAsync()
         {
             try
             {
-                var entities = Repository.GetAll().ToList();
+                var entities = await Repository.GetAllAsync();
                 var models = entities.Adapt<IEnumerable<TModel>>();
                 return new ServiceResponse<IEnumerable<TModel>>
                 {
@@ -46,11 +65,12 @@
             }
         }
 
-        public virtual ServiceResponse<TModel> GetById(int id)
+        /// <inheritdoc />
+        public virtual async Task<ServiceResponse<TModel>> GetByIdAsync(Guid id)
         {
             try
             {
-                var entity = Repository.GetById(id);
+                var entity = await Repository.GetByIdAsync(id);
                 if (entity == null)
                 {
                     return new ServiceResponse<TModel>
@@ -78,13 +98,13 @@
             }
         }
 
-        public virtual ServiceResponse<TModel> Insert(TModel model)
+        /// <inheritdoc />
+        public virtual async Task<ServiceResponse<TModel>> InsertAsync(TModel model)
         {
             try
             {
                 var entity = model.Adapt<TEntity>();
-                var insertedEntity = Repository.Insert(entity);
-                Repository.Save();
+                var insertedEntity = await Repository.InsertAsync(entity);
                 var insertedModel = insertedEntity.Adapt<TModel>();
                 return new ServiceResponse<TModel>
                 {
@@ -103,13 +123,13 @@
             }
         }
 
-        public virtual ServiceResponse<TModel> Update(TModel model)
+        /// <inheritdoc />
+        public virtual async Task<ServiceResponse<TModel>> UpdateAsync(TModel model)
         {
             try
             {
                 var entity = model.Adapt<TEntity>();
-                var updatedEntity = Repository.Update(entity);
-                Repository.Save();
+                var updatedEntity = await Repository.UpdateAsync(entity);
                 var updatedModel = updatedEntity.Adapt<TModel>();
                 return new ServiceResponse<TModel>
                 {
@@ -128,36 +148,38 @@
             }
         }
 
-        public virtual ServiceResponse<TModel> Delete(int id)
+        /// <inheritdoc />
+        public virtual async Task<ServiceResponse<bool>> DeleteAsync(Guid id)
         {
             try
             {
-                var entity = Repository.GetById(id);
+                var entity = await Repository.GetByIdAsync(id);
                 if (entity == null)
                 {
-                    return new ServiceResponse<TModel>
+                    Logger.LogWarning("Entity with ID {Id} not found.", id);
+                    return new ServiceResponse<bool>
                     {
                         Success = false,
-                        Message = "Entity not found"
+                        Message = "Entity not found",
+                        Data = false
                     };
                 }
 
-                var deletedEntity = Repository.Delete(entity);
-                Repository.Save();
-                var deletedModel = deletedEntity.Adapt<TModel>();
-                return new ServiceResponse<TModel>
+                await Repository.DeleteAsync(entity); // Perform the delete
+                return new ServiceResponse<bool>
                 {
-                    Data = deletedModel,
-                    Success = true
+                    Success = true,
+                    Data = true
                 };
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error deleting entity");
-                return new ServiceResponse<TModel>
+                Logger.LogError(ex, "Error deleting entity with ID {Id}", id);
+                return new ServiceResponse<bool>
                 {
                     Success = false,
-                    Message = ex.Message
+                    Message = ex.Message,
+                    Data = false
                 };
             }
         }
