@@ -1,15 +1,16 @@
 using LaundrySystem.Api.Controllers.Base;
 using LaundrySystem.BLL.Infrastructure.Interfaces;
 using LaundrySystem.Domain.Model.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LaundrySystem.API.Controllers.Implementations
 {
     /// <summary>
-    /// ServiceMessagesController
+    /// Controller for managing service messages.
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/service-messages")]
     public class ServiceMessagesController : BaseController<ServiceMessagesController>
     {
         private readonly IServiceMessageService _serviceMessageService;
@@ -17,26 +18,32 @@ namespace LaundrySystem.API.Controllers.Implementations
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceMessagesController"/> class.
         /// </summary>
-        /// <param name="serviceMessageService">The ServiceMessage service.</param>
-        /// <param name="logger">The logger.</param>
         public ServiceMessagesController(IServiceMessageService serviceMessageService, ILogger<ServiceMessagesController> logger)
             : base(logger)
         {
             _serviceMessageService = serviceMessageService;
         }
 
-        ///<inheritdoc/>
+        /// <summary>
+        /// Gets active service messages (within their active date range).
+        /// </summary>
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [Authorize]
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
             try
             {
-                var response = await _serviceMessageService.GetAllAsync();
+                var response = await _serviceMessageService.GetAllAsync(cancellationToken);
                 if (!response.Success)
                 {
                     return BadRequest(response.Message);
                 }
-                return Ok(response.Data);
+                // Filter to only active messages (within date range)
+                var now = DateTime.UtcNow;
+                var active = response.Data?
+                    .Where(m => now >= m.ActiveFrom && (m.ActiveTo == null || now <= m.ActiveTo))
+                    .ToList();
+                return Ok(active);
             }
             catch (Exception ex)
             {
@@ -44,13 +51,16 @@ namespace LaundrySystem.API.Controllers.Implementations
             }
         }
 
-        ///<inheritdoc/>
+        /// <summary>
+        /// Gets a service message by ID.
+        /// </summary>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        [Authorize]
+        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         {
             try
             {
-                var response = await _serviceMessageService.GetByIdAsync(id);
+                var response = await _serviceMessageService.GetByIdAsync(id, cancellationToken);
                 if (!response.Success)
                 {
                     return NotFound(response.Message);
@@ -63,13 +73,16 @@ namespace LaundrySystem.API.Controllers.Implementations
             }
         }
 
-        ///<inheritdoc/>
+        /// <summary>
+        /// Creates a new service message (admin only).
+        /// </summary>
         [HttpPost]
-        public async Task<IActionResult> Insert([FromBody] ServiceMessageModel serviceMessageModel)
+        [Authorize(Roles = "AccountAdmin,BuildingAdmin")]
+        public async Task<IActionResult> Insert([FromBody] ServiceMessageModel serviceMessageModel, CancellationToken cancellationToken)
         {
             try
             {
-                var response = await _serviceMessageService.InsertAsync(serviceMessageModel);
+                var response = await _serviceMessageService.InsertAsync(serviceMessageModel, cancellationToken);
                 if (!response.Success)
                 {
                     return BadRequest(response.Message);
@@ -86,14 +99,17 @@ namespace LaundrySystem.API.Controllers.Implementations
             }
         }
 
-        ///<inheritdoc/>
+        /// <summary>
+        /// Updates an existing service message (admin only).
+        /// </summary>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] ServiceMessageModel serviceMessageModel)
+        [Authorize(Roles = "AccountAdmin,BuildingAdmin")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] ServiceMessageModel serviceMessageModel, CancellationToken cancellationToken)
         {
             try
             {
                 serviceMessageModel.Id = id;
-                var response = await _serviceMessageService.UpdateAsync(serviceMessageModel);
+                var response = await _serviceMessageService.UpdateAsync(serviceMessageModel, cancellationToken);
                 if (!response.Success)
                 {
                     return BadRequest(response.Message);
@@ -106,13 +122,16 @@ namespace LaundrySystem.API.Controllers.Implementations
             }
         }
 
-        ///<inheritdoc/>
+        /// <summary>
+        /// Deletes a service message (admin only).
+        /// </summary>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        [Authorize(Roles = "AccountAdmin,BuildingAdmin")]
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
             try
             {
-                var response = await _serviceMessageService.DeleteAsync(id);
+                var response = await _serviceMessageService.DeleteAsync(id, cancellationToken);
                 if (!response.Success)
                 {
                     return BadRequest(response.Message);

@@ -1,23 +1,42 @@
-﻿namespace LaundrySystem.Domain.Model.Entities
+namespace LaundrySystem.Domain.Model.Entities;
+
+public enum ServiceMessageSeverity
 {
-    public class ServiceMessage
-    {
-        public Guid Id { get; set; } = Guid.NewGuid();
+    Info = 0,
+    Warning = 1,
+    Critical = 2
+}
 
-        public string Message { get; set; }
+public class ServiceMessage
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
 
-        //public DateTime CreatedAt { get; private set; } = DateTime.UtcNow; shoukd be private set but i do this to seed data
+    /// <summary>
+    /// Multi-tenancy: Which account this message belongs to (required)
+    /// </summary>
+    public Guid AccountId { get; set; }
 
-        //public bool IsRead { get; private set; } shoukd be private set but i do this to seed data
+    /// <summary>
+    /// Optional: If set, message only applies to this building.
+    /// If null, message applies to all buildings in the account.
+    /// </summary>
+    public Guid? BuildingId { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string Title { get; set; } = string.Empty;
 
-        public bool IsRead { get; set; }
+    public string Body { get; set; } = string.Empty;
 
-        // Business logic methods
-        public void MarkAsRead()
-        {
-            IsRead = true;
-        }
-    }
+    public ServiceMessageSeverity Severity { get; set; } = ServiceMessageSeverity.Info;
+
+    public DateTime ActiveFrom { get; set; } = DateTime.UtcNow;
+
+    public DateTime? ActiveTo { get; set; }
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    // Navigation properties
+    public Account Account { get; set; } = null!;
+    public Building? Building { get; set; }
+
+    public bool IsActive => DateTime.UtcNow >= ActiveFrom && (ActiveTo == null || DateTime.UtcNow <= ActiveTo);
 }

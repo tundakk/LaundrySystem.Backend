@@ -1,4 +1,4 @@
-﻿using LaundrySystem.Domain.Model.Entities;
+using LaundrySystem.Domain.Model.Entities;
 using LaundrySystem.Domain.Model.Models;
 using Mapster;
 
@@ -115,12 +115,22 @@ public static class MappingConfig
         // ServiceMessage mapping
         TypeAdapterConfig<ServiceMessage, ServiceMessageModel>.NewConfig()
             .Map(dest => dest.Id, src => src.Id)
-            .Map(dest => dest.Message, src => src.Message)
+            .Map(dest => dest.Title, src => src.Title)
+            .Map(dest => dest.Body, src => src.Body)
+            .Map(dest => dest.Severity, src => src.Severity.ToString().ToLower())
+            .Map(dest => dest.ActiveFrom, src => src.ActiveFrom)
+            .Map(dest => dest.ActiveTo, src => src.ActiveTo)
+            .Map(dest => dest.BuildingId, src => src.BuildingId)
             .Map(dest => dest.CreatedAt, src => src.CreatedAt);
 
         TypeAdapterConfig<ServiceMessageModel, ServiceMessage>.NewConfig()
             .Map(dest => dest.Id, src => src.Id)
-            .Map(dest => dest.Message, src => src.Message)
+            .Map(dest => dest.Title, src => src.Title)
+            .Map(dest => dest.Body, src => src.Body)
+            .Map(dest => dest.Severity, src => Enum.Parse<ServiceMessageSeverity>(src.Severity, true))
+            .Map(dest => dest.ActiveFrom, src => src.ActiveFrom)
+            .Map(dest => dest.ActiveTo, src => src.ActiveTo)
+            .Map(dest => dest.BuildingId, src => src.BuildingId)
             .Map(dest => dest.CreatedAt, src => src.CreatedAt);
     }
 }
