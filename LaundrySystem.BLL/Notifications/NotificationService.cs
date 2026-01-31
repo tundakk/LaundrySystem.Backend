@@ -118,6 +118,16 @@ namespace LaundrySystem.BLL.Notifications
                         subscription.MarkNotificationAsSent();
                         notifiedCount++;
                     }
+
+                    // Create in-app notification
+                    _dataContext.Set<Notification>().Add(new Notification
+                    {
+                        UserId = user.Id,
+                        Title = "Laundry time available",
+                        Message = $"A timeslot you subscribed to is now available: {roomName}, {slotTime.Start:dd/MM/yyyy HH:mm} - {slotTime.End:HH:mm}",
+                        Link = "/bookings",
+                        CreatedAt = DateTime.UtcNow
+                    });
                 }
 
                 await _dataContext.SaveChangesAsync(ct);
