@@ -22,5 +22,10 @@
 
         [Required]
         public string? PhoneNumber { get; set; }
+
+        /// <summary>
+        /// The user's primary role.
+        /// </summary>
+        public string? Role { get; set; }
     }
 }

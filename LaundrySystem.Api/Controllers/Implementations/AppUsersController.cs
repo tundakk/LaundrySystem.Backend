@@ -45,10 +45,16 @@ namespace LaundrySystem.API.Controllers
             {
                 var totalUsers = await _userManager.Users.CountAsync();
 
-                var users = await _userManager.Users
+                var pagedUsers = await _userManager.Users
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
-                    .Select(user => new AppUserModel
+                    .ToListAsync();
+
+                var users = new List<AppUserModel>();
+                foreach (var user in pagedUsers)
+                {
+                    var roles = await _userManager.GetRolesAsync(user);
+                    users.Add(new AppUserModel
                     {
                         Id = user.Id,
                         UserName = user.UserName,
@@ -59,8 +65,9 @@ namespace LaundrySystem.API.Controllers
                         EmailOptOut = user.EmailOptOut,
                         SmsOptOut = user.SmsOptOut,
                         PinCode = user.PinCode,
-                    })
-                    .ToListAsync();
+                        Role = roles.FirstOrDefault(),
+                    });
+                }
 
                 var response = new ServiceResponse<object>
                 {
@@ -89,6 +96,181 @@ namespace LaundrySystem.API.Controllers
                 };
 
                 return StatusCode(500, response);
+            }
+        }
+
+        /// <summary>
+        /// Gets the current authenticated user's details.
+        /// </summary>
+        /// <returns>The current user details.</returns>
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized(new ServiceResponse<AppUserModel>
+                    {
+                        Data = null,
+                        Success = false,
+                        Message = "User not authenticated."
+                    });
+                }
+
+                var user = await _userManager.FindByIdAsync(userId.ToString());
+                if (user == null)
+                {
+                    return NotFound(new ServiceResponse<AppUserModel>
+                    {
+                        Data = null,
+                        Success = false,
+                        Message = "User not found."
+                    });
+                }
+
+                var userModel = new AppUserModel
+                {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    PhoneNumber = user.PhoneNumber,
+                    ApartmentNumber = user.ApartmentNumber,
+                    PhoneNumberSecondary = user.PhoneNumberSecondary,
+                    EmailOptOut = user.EmailOptOut,
+                    SmsOptOut = user.SmsOptOut,
+                    PinCode = user.PinCode,
+                };
+
+                return Ok(new ServiceResponse<AppUserModel>
+                {
+                    Data = userModel,
+                    Success = true,
+                    Message = "User retrieved successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching current user");
+
+                return StatusCode(500, new ServiceResponse<AppUserModel>
+                {
+                    Data = null,
+                    Success = false,
+                    Message = "An error occurred while fetching the user."
+                });
+            }
+        }
+
+        /// <summary>
+        /// Updates the current authenticated user's details.
+        /// </summary>
+        /// <param name="model">The user update model.</param>
+        /// <returns>The updated user details.</returns>
+        [Authorize]
+        [HttpPut("me")]
+        public async Task<IActionResult> UpdateCurrentUser([FromBody] AppUserUpdateModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new ServiceResponse<object>
+                {
+                    Data = null,
+                    Success = false,
+                    Message = "Invalid model state."
+                });
+            }
+
+            try
+            {
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized(new ServiceResponse<object>
+                    {
+                        Data = null,
+                        Success = false,
+                        Message = "User not authenticated."
+                    });
+                }
+
+                var user = await _userManager.FindByIdAsync(userId.ToString());
+                if (user == null)
+                {
+                    return NotFound(new ServiceResponse<object>
+                    {
+                        Data = null,
+                        Success = false,
+                        Message = "User not found."
+                    });
+                }
+
+                // Update user properties
+                if (model.PhoneNumber != null) user.PhoneNumber = model.PhoneNumber;
+                if (model.PhoneNumberSecondary != null) user.PhoneNumberSecondary = model.PhoneNumberSecondary;
+                user.EmailOptOut = model.EmailOptOut;
+                user.SmsOptOut = model.SmsOptOut;
+
+                // Handle PinCode if provided
+                if (model.PinCode.HasValue)
+                {
+                    try
+                    {
+                        user.SetPinCode(model.PinCode.Value);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        return BadRequest(new ServiceResponse<object>
+                        {
+                            Data = null,
+                            Success = false,
+                            Message = ex.Message
+                        });
+                    }
+                }
+
+                var result = await _userManager.UpdateAsync(user);
+                if (result.Succeeded)
+                {
+                    return Ok(new ServiceResponse<AppUserModel>
+                    {
+                        Data = new AppUserModel
+                        {
+                            Id = user.Id,
+                            UserName = user.UserName,
+                            Email = user.Email,
+                            PhoneNumber = user.PhoneNumber,
+                            ApartmentNumber = user.ApartmentNumber,
+                            PhoneNumberSecondary = user.PhoneNumberSecondary,
+                            EmailOptOut = user.EmailOptOut,
+                            SmsOptOut = user.SmsOptOut,
+                            PinCode = user.PinCode,
+                        },
+                        Success = true,
+                        Message = "User updated successfully."
+                    });
+                }
+
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                return BadRequest(new ServiceResponse<object>
+                {
+                    Data = null,
+                    Success = false,
+                    Message = string.Join("; ", errors)
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating current user");
+
+                return StatusCode(500, new ServiceResponse<object>
+                {
+                    Data = null,
+                    Success = false,
+                    Message = "An error occurred while updating the user."
+                });
             }
         }
 
@@ -259,6 +441,139 @@ namespace LaundrySystem.API.Controllers
                 };
 
                 return StatusCode(500, response);
+            }
+        }
+
+        /// <summary>
+        /// Admin endpoint to edit user details (name, email, apartment, role).
+        /// </summary>
+        /// <param name="id">The user ID.</param>
+        /// <param name="model">The admin edit model.</param>
+        /// <returns>The updated user details.</returns>
+        [Authorize(Roles = "AccountAdmin,SuperAdmin")]
+        [HttpPut("admin/{id}")]
+        public async Task<IActionResult> AdminEditUser(Guid id, [FromBody] AdminEditUserModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new ServiceResponse<object>
+                {
+                    Data = null,
+                    Success = false,
+                    Message = "Invalid model state."
+                });
+            }
+
+            try
+            {
+                var user = await _userManager.FindByIdAsync(id.ToString());
+                if (user == null)
+                {
+                    return NotFound(new ServiceResponse<object>
+                    {
+                        Data = null,
+                        Success = false,
+                        Message = "User not found."
+                    });
+                }
+
+                // Validate duplicate email
+                var normalizedEmail = model.Email.ToUpperInvariant();
+                var existingUser = await _userManager.Users
+                    .FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail && u.Id != id);
+                if (existingUser != null)
+                {
+                    return BadRequest(new ServiceResponse<object>
+                    {
+                        Data = null,
+                        Success = false,
+                        Message = "A user with this email already exists."
+                    });
+                }
+
+                // Validate role exists
+                if (!await _roleManager.RoleExistsAsync(model.Role))
+                {
+                    return BadRequest(new ServiceResponse<object>
+                    {
+                        Data = null,
+                        Success = false,
+                        Message = $"Role '{model.Role}' does not exist."
+                    });
+                }
+
+                // Capture old values for audit log
+                var oldUserName = user.UserName;
+                var oldEmail = user.Email;
+                var oldApartment = user.ApartmentNumber;
+                var oldRoles = await _userManager.GetRolesAsync(user);
+
+                // Update user properties
+                user.UserName = model.UserName;
+                user.Email = model.Email;
+                user.ApartmentNumber = model.ApartmentNumber;
+
+                var result = await _userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                {
+                    var errors = result.Errors.Select(e => e.Description).ToList();
+                    return BadRequest(new ServiceResponse<object>
+                    {
+                        Data = null,
+                        Success = false,
+                        Message = string.Join("; ", errors)
+                    });
+                }
+
+                // Update role if changed
+                if (!oldRoles.Contains(model.Role) || oldRoles.Count != 1)
+                {
+                    // Remove all existing roles and assign the new one
+                    if (oldRoles.Any())
+                    {
+                        await _userManager.RemoveFromRolesAsync(user, oldRoles);
+                    }
+                    await _userManager.AddToRoleAsync(user, model.Role);
+                }
+
+                // Audit log
+                var adminId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                _logger.LogInformation(
+                    "Admin {AdminId} edited user {UserId}: UserName '{OldUserName}'->'{NewUserName}', Email '{OldEmail}'->'{NewEmail}', Apartment {OldApartment}->{NewApartment}, Role '{OldRole}'->'{NewRole}'",
+                    adminId, id,
+                    oldUserName, model.UserName,
+                    oldEmail, model.Email,
+                    oldApartment, model.ApartmentNumber,
+                    string.Join(",", oldRoles), model.Role);
+
+                return Ok(new ServiceResponse<AppUserModel>
+                {
+                    Data = new AppUserModel
+                    {
+                        Id = user.Id,
+                        UserName = user.UserName,
+                        Email = user.Email,
+                        PhoneNumber = user.PhoneNumber,
+                        ApartmentNumber = user.ApartmentNumber,
+                        PhoneNumberSecondary = user.PhoneNumberSecondary,
+                        EmailOptOut = user.EmailOptOut,
+                        SmsOptOut = user.SmsOptOut,
+                        PinCode = user.PinCode,
+                    },
+                    Success = true,
+                    Message = "User updated successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in admin edit of user {UserId}", id);
+
+                return StatusCode(500, new ServiceResponse<object>
+                {
+                    Data = null,
+                    Success = false,
+                    Message = "An error occurred while updating the user."
+                });
             }
         }
 
